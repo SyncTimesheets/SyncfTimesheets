@@ -1,0 +1,234 @@
+﻿@{
+    ViewBag.Title = "Time Sheet";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var res = ViewBag.result;
+}
+
+@section TitleSection
+{
+    Time Sheet
+}
+
+@section StyleSection
+{
+    <style>
+        .btn-section {
+            padding-left: 41.5%;
+        }
+
+        #timesheet-subscribe {
+            display:inline-block;
+            float: right;
+            font-size: 13px;
+            font-weight: 400;
+            background-color: #5bc0de;
+            border-color: #46b8da;
+            color: #fff;
+            padding: 8px 10px 6px 9px;
+            background-repeat: no-repeat;
+            background-position: -38px -206px;
+            margin-top: -35px;
+            margin-left:25px;
+        }
+
+        #datepicker {
+            width: 500px;
+            margin-top: 28px;
+        }
+
+        #datepicker-heading {
+            font-size: 15px;
+        }
+
+        .control-label {
+            font-size: 16px;
+        }
+
+        #control-button {
+            float: left;
+        }
+
+        .h3 {
+            font-size: 24px;
+        }
+
+        .call-button {
+            float: left;
+        }
+
+        .content {
+            margin-bottom: 20px;
+        }
+
+        #intializeFilter {
+            width: 60px;
+        }
+
+        #resetFilter {
+            width: 60px;
+            margin-left: 10px;
+        }
+
+        .toggle-section {
+            margin-bottom: 10px;
+        }
+        .e-grid .e-alt_row {
+        background-color: #ffffff;
+    }
+    #search-option{
+            float: left;
+    margin-left: 351px;
+    margin-top: -53px;
+    width: 850px;
+    }
+    .search-text{
+        font-size: 15px;
+    }
+
+    #call-button{
+    float: right;
+    margin-top: -53px;
+    margin-right: 125px;
+    }
+    </style>
+    
+<link href="~/content/spinner.css" rel="stylesheet" />
+}
+
+@section ScriptSection
+{
+    @Scripts.Render("~/bundle/FilterPage")
+    <script type="text/javascript">
+        $(function () {
+
+            var employeeList = ["ananth.manickam", "narayanasamyj", "venu.perumal", "yogeshrochan.sabapathy"];
+
+            $("#employeeList").ejAutocomplete({
+                showPopupButton: true,
+                width: "50%",
+                multiSelectMode: ej.MultiSelectMode.VisualMode,
+                dataSource: employeeList
+            });
+
+            $("#daterange").ejDateRangePicker({
+                "opens": "right",
+                ranges: [
+                    { label: "Today", range: [new Date(), new Date()] },
+                    { label: "Last Week", range: [new Date(new Date().setDate(new Date().getDate() - 7)), new Date()] },
+                    { label: "Last Month", range: [new Date(new Date().setMonth(new Date().getMonth() - 1)), new Date()] },
+                    { label: "Last 2 Months", range: [new Date(new Date().setMonth(new Date().getMonth() - 2)), new Date()] },
+
+
+                ], width: "50%"
+            });
+
+
+        });
+    </script>
+
+@Scripts.Render("~/bundle/FilterPage")
+<script type="text/javascript">    
+    if (window.location.pathname.startsWith("/worklogdetails")) {
+        var timesheetData = @Html.Raw(Json.Encode(res));
+        var url = window.location.search.split('?');
+        var s=url[1].split('&');
+        var start = s[0].split('=');
+        var startdate = new Date(start[1]);
+        var end = s[1].split('=');
+        var enddate=new Date(end[1])
+        var dateRange = {};
+        dateRange.startDate = startdate;
+        dateRange.endDate = enddate;     
+        loadGrid(dateRange, timesheetData);
+    }
+    $(function () {
+
+        $("#daterange").ejDateRangePicker({
+            ranges: [
+                { label: "Today", range: [new Date(), new Date()] },
+                { label: "Last Week", range: [new Date(new Date().setDate(new Date().getDate() - 7)), new Date()] },
+                { label: "Last Month", range: [new Date(new Date().setMonth(new Date().getMonth() - 1)), new Date()] },
+                { label: "Last 2 Months", range: [new Date(new Date().setMonth(new Date().getMonth() - 2)), new Date()] },
+
+
+            ], width: "50%"
+        });
+
+
+    });
+</script>
+
+
+}
+
+@section MainSection
+{
+@Html.Partial("_Spinner")
+    <div id="timesheet">
+        <div id="content-section" class="container">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="toggle-section">
+                    <div class="content">
+                        <h3>Time Sheet Report</h3>
+                        <div id="datepicker" class="show">
+                            <span id="datepicker-heading">Date range</span><br />
+                            <input id="daterange" type="text" />
+                        </div>
+                        <div id="search-option" class="control">
+                            <span class="search-text">Search Employee</span>
+                            <input type="text" id="employeeList" />
+                        </div>
+                        <div>
+                            <a class="btn btn-default hide" id="timesheet-subscribe" onclick="TimesheetSubscribeGrid()">SUBSCRIBE</a>
+                        </div>
+                    </div>
+                    <div id="call-button">
+                        <button class="btn btn-sm btn-info" id="intializeFilter">Run</button>
+                        <button class="btn btn-sm btn-default" id="resetFilter">Reset</button>
+                    </div>
+                </div>
+                <div class="content-container-fluid">
+                    <div id="Grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div id="loadingmodal" class="modal fade modal-sm" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Loading...</h4>
+                <div class="progress">                    
+                    <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:80%">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+    <script type="text/x-jsrender" id="projectNameColumnTemplate">
+        <a href={{: ProjectNameLink}} target="_blank">{{: projectName }}</a>
+    </script>
+    <script type="text/x-jsrender" id="jiraIdColumnTemplate">
+        <a href="{{: JiraIdLink}}" tar target="_blank">{{: JIRAId }}</a>
+    </script>
+<script id="summaryTemplate" type="text/x-jsrender">
+    {{if summaryValue}}
+    {{:summaryValue}}
+    {{else}}
+    -
+    {{/if}}
+</script>
+
+}
+
+
+
+
+
+
+
